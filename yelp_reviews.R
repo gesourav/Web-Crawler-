@@ -62,50 +62,50 @@ yelplinks[,1] <- as.character(yelplinks[,1])
 df <- data.frame("Reviews"= character(0), "Ratings"= character(0), "Date" = character(0))
 for(i in 1:nrow(yelplinks))
 {
-  all.html <- getURL(yelplinks[i,1],
-                     .opts = list(proxy='http://19.12.2.105:83'),
-                     curl = getCurlHandle())
-  nopg.find <- as.numeric(regexpr("Page 1 of ", all.html)) #Search for total pages
-  total.pages <- as.numeric(substr(all.html, nopg.find+10, nopg.find+11))
-  print(total.pages)
-  if(total.pages!=1){ 
-    total.pages <- total.pages-1
-    lastpage <- total.pages*20 # find the last ?start= n
-  }else{
-    lastpage <- 20 # if its Page 1 of 1 then no need of ?start=20, 40, . . . . . 
-  }
-  page.start <- seq(from = 20, to = lastpage, by = 20) #creating a sequence of 20 Reviews/page
-  mainq <- as.character(yelplinks[i,1]) # the 1st page search query
-  q <- as.character(yelplinks[i,1]) #copy of the 1st page N.B. this will get updated to 20,40
-  for(j in 1:length(page.start))
-  {
-    
-    data.html <- getURL(q,
-                        .opts = list(proxy='http://19.12.2.105:83'),
-                        curl = getCurlHandle())
-    reviews <- genXtract(data.html, '<p itemprop=\"description\" lang=\"en\">','</p>')
-    names(reviews) <- NULL
-    reviews <- as.character(reviews) #extracting all Reviews at current page
-    
-    dates <- genXtract(data.html, '<meta itemprop=\"datePublished\" content=\"','\">')
-    names(dates) <- NULL
-    dates<- as.character(dates) #extracting the associated Dates of the Reviews at current pg
-    
-    ratings <- genXtract(data.html, '<meta itemprop=\"ratingValue\" content=\"' ,'.0\">')
-    names(ratings) <- NULL
-    ratings <- as.character(ratings) #extracting the associated Dates of the Reviews at current pg
-    ratings <- ratings[-1] #The 1st Ratings will be the overall Review of the restaurant itself
-    
-    tempdf <- data.frame(cbind(reviews, ratings, dates)) #create a df of the data extracted
-    
-    df <- rbind(df, tempdf) # append it with the old data
-    tempdf <- data.frame()
-    
-    q <- NULL
-    q <- paste(mainq, "?start=", as.character(page.start[j]), sep = "") # creating next page search query
-    print(q) # print the new query
-    reviews <- NULL
-    ratings <- NULL
-    dates <- NULL
-  }
+    all.html <- getURL(yelplinks[i,1],
+                       .opts = list(proxy='http://19.12.2.105:83'),
+                       curl = getCurlHandle())
+    nopg.find <- as.numeric(regexpr("Page 1 of ", all.html)) #Search for total pages
+    total.pages <- as.numeric(substr(all.html, nopg.find+10, nopg.find+11))
+    print(total.pages)
+    if(total.pages!=1){ 
+      total.pages <- total.pages-1
+      lastpage <- total.pages*20 # find the last ?start= n
+    }else{
+      lastpage <- 20 # if its Page 1 of 1 then no need of ?start=20, 40, . . . . . 
+    }
+    page.start <- seq(from = 20, to = lastpage, by = 20) #creating a sequence of 20 Reviews/page
+    mainq <- as.character(yelplinks[i,1]) # the 1st page search query
+    q <- as.character(yelplinks[i,1]) #copy of the 1st page N.B. this will get updated to 20,40
+    for(j in 1:length(page.start))
+    {
+
+      data.html <- getURL(q,
+                          .opts = list(proxy='http://19.12.2.105:83'),
+                          curl = getCurlHandle())
+      reviews <- genXtract(data.html, '<p itemprop=\"description\" lang=\"en\">','</p>')
+      names(reviews) <- NULL
+      reviews <- as.character(reviews) #extracting all Reviews at current page
+
+      dates <- genXtract(data.html, '<meta itemprop=\"datePublished\" content=\"','\">')
+      names(dates) <- NULL
+      dates<- as.character(dates) #extracting the associated Dates of the Reviews at current pg
+
+      ratings <- genXtract(data.html, '<meta itemprop=\"ratingValue\" content=\"' ,'.0\">')
+      names(ratings) <- NULL
+      ratings <- as.character(ratings) #extracting the associated Dates of the Reviews at current pg
+      ratings <- ratings[-1] #The 1st Ratings will be the overall Review of the restaurant itself
+
+      tempdf <- data.frame(cbind(reviews, ratings, dates)) #create a df of the data extracted
+
+      df <- rbind(df, tempdf) # append it with the old data
+      tempdf <- data.frame()
+
+      q <- NULL
+      q <- paste(mainq, "?start=", as.character(page.start[j]), sep = "") # creating next page search query
+      print(q) # print the new query
+      reviews <- NULL
+      ratings <- NULL
+      dates <- NULL
+    }
 }
